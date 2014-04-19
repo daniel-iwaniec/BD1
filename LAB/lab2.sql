@@ -82,6 +82,21 @@ ALTER TABLE OSOBA ADD (
   CONSTRAINT OSOBA_PK PRIMARY KEY (id),
   CONSTRAINT OSOBA_ADRES_FK FOREIGN KEY (adres_id) REFERENCES ADRES (id) ON DELETE CASCADE,
   CONSTRAINT OSOBA_STAN_CYWILNY_CHK CHECK (stan_cywilny = 0 OR stan_cywilny = 1), -- Emulacja boolean
+  CONSTRAINT OSOBA_PESEL_CHK CHECK ( --http://pl.wikipedia.org/wiki/PESEL#Metoda_r.C3.B3wnowa.C5.BCna
+    CAST(SUBSTR(CAST((
+    (1 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 1, 1) AS NUMBER)) +
+    (3 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 2, 1) AS NUMBER)) +
+    (7 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 3, 1) AS NUMBER)) +
+    (9 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 4, 1) AS NUMBER)) +
+    (1 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 5, 1) AS NUMBER)) +
+    (3 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 6, 1) AS NUMBER)) +
+    (7 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 7, 1) AS NUMBER)) +
+    (9 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 8, 1) AS NUMBER)) +
+    (1 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 9, 1) AS NUMBER)) +
+    (3 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 10, 1) AS NUMBER)) +
+    (1 * CAST(SUBSTR(CAST(pesel AS VARCHAR2(11)), 11, 1) AS NUMBER))) AS VARCHAR(3)), -1) AS NUMBER)
+    = 0
+  ),
   CONSTRAINT OSOBA_PESEL_UK UNIQUE (pesel)
 );
 
@@ -300,10 +315,34 @@ END;
 
 -- SELECT
 
--- SELECT (widok)
+-- SELECT (ten select jest bez sensu, ale chodziło o dobry przykład)
 CREATE OR REPLACE VIEW DATA_WAREHOUSE AS
-SELECT opis_uslugi AS usluga FROM (
-  SELECT * FROM ZLECENIE
+SELECT
+  id AS "Numer zlecenia",
+  opis_uslugi AS "Usługa",
+  to_char(cena_podstawowa, 'fm9999999.90') AS "Cena usługi",
+  imie_pracownika AS "Imię pracownika",
+  nazwisko_pracownika AS "Nazwisko pracownika",
+  stanowisko AS "Stanowisko pracownika"
+  -- pesel pracownika
+  -- case na stan_cywilny
+  -- miejsce zamieszkania pracownika (concat (miasto, itd.))
+
+  -- imie klienta
+  -- nazwisko klienta
+  -- cena ze znizka
+  -- pesel klienta
+  -- miejsce zamieszkania klienta (concat (miasto, itd.))
+FROM (
+SELECT * FROM (
+  SELECT
+    ZLECENIE.id,
+    USLUGA.opis_uslugi,
+    USLUGA.cena_podstawowa,
+    PRACOWNIK_OSOBA.imie AS imie_pracownika,
+    PRACOWNIK_OSOBA.nazwisko AS nazwisko_pracownika,
+    PRACOWNIK.stanowisko
+  FROM ZLECENIE
   JOIN USLUGA ON (ZLECENIE.USLUGA_ID = USLUGA.ID)
 
   JOIN PRACOWNIK ON (ZLECENIE.PRACOWNIK_ID = PRACOWNIK.ID)
@@ -321,8 +360,15 @@ SELECT opis_uslugi AS usluga FROM (
 
 UNION ALL
 
-SELECT opis_uslugi AS usluga FROM (
-  SELECT * FROM ZLECENIE
+SELECT * FROM (
+  SELECT
+    ZLECENIE.id,
+    USLUGA.opis_uslugi,
+    USLUGA.cena_podstawowa,
+    PRACOWNIK_OSOBA.imie AS imie_pracownika,
+    PRACOWNIK_OSOBA.nazwisko AS nazwisko_pracownika,
+    PRACOWNIK.stanowisko
+  FROM ZLECENIE
   JOIN USLUGA ON (ZLECENIE.USLUGA_ID = USLUGA.ID)
 
   JOIN PRACOWNIK ON (ZLECENIE.PRACOWNIK_ID = PRACOWNIK.ID)
@@ -336,6 +382,7 @@ SELECT opis_uslugi AS usluga FROM (
   JOIN MIASTO KLIENT_MIASTO ON (KLIENT_ADRES.MIASTO_ID = KLIENT_MIASTO.ID)
 
   ORDER BY ZLECENIE.id DESC
-) WHERE ROWNUM = 1;
+) WHERE ROWNUM = 1
+);
 
 SELECT * FROM DATA_WAREHOUSE;
