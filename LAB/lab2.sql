@@ -321,27 +321,55 @@ SELECT
   id AS "Numer zlecenia",
   opis_uslugi AS "Usługa",
   to_char(cena_podstawowa, 'fm9999999.90') AS "Cena usługi",
+  to_char(cena_ze_znizka, 'fm9999999.90') AS "Cena ze zniżką",
+
   imie_pracownika AS "Imię pracownika",
   nazwisko_pracownika AS "Nazwisko pracownika",
-  stanowisko AS "Stanowisko pracownika"
-  -- pesel pracownika
-  -- case na stan_cywilny
-  -- miejsce zamieszkania pracownika (concat (miasto, itd.))
+  pesel_pracownika AS "Pesel pracownika",
+  stanowisko AS "Stanowisko pracownika",
+  CASE -- terminologia wg http://pl.wikipedia.org/wiki/Stan_cywilny
+   WHEN stan_cywilny_pracownika = 0 THEN 'Stan wolny'
+   WHEN stan_cywilny_pracownika = 1 THEN 'Małżonek'
+  END AS "Stan cywilny pracownika",
+  miasto_pracownika || ', ' || ulica_pracownika || ' ' || nr_domu_pracownika ||
+  CASE
+   WHEN nr_mieszkania_pracownika IS NOT NULL THEN '/' || nr_mieszkania_pracownika
+   ELSE ''
+  END AS "Adres pracownika",
 
-  -- imie klienta
-  -- nazwisko klienta
-  -- cena ze znizka
-  -- pesel klienta
-  -- miejsce zamieszkania klienta (concat (miasto, itd.))
+  imie_klienta AS "Imie klienta",
+  nazwisko_klienta AS "Nazwisko klienta",
+  pesel_klienta AS "Pesel klienta",
+  miasto_klienta || ', ' || ulica_klienta || ' ' || nr_domu_klienta ||
+  CASE
+   WHEN nr_mieszkania_klienta IS NOT NULL THEN '/' || nr_mieszkania_klienta
+   ELSE ''
+  END AS "Adres klienta"
 FROM (
 SELECT * FROM (
   SELECT
     ZLECENIE.id,
     USLUGA.opis_uslugi,
     USLUGA.cena_podstawowa,
+    ROUND((USLUGA.cena_podstawowa - ((KLIENT.znizka/100) * USLUGA.cena_podstawowa)), 2) AS cena_ze_znizka,
+
     PRACOWNIK_OSOBA.imie AS imie_pracownika,
     PRACOWNIK_OSOBA.nazwisko AS nazwisko_pracownika,
-    PRACOWNIK.stanowisko
+    PRACOWNIK_OSOBA.pesel AS pesel_pracownika,
+    PRACOWNIK_OSOBA.stan_cywilny AS stan_cywilny_pracownika,
+    PRACOWNIK.stanowisko,
+    PRACOWNIK_ADRES.ulica AS ulica_pracownika,
+    PRACOWNIK_ADRES.nr_domu AS nr_domu_pracownika,
+    PRACOWNIK_ADRES.nr_mieszkania AS nr_mieszkania_pracownika,
+    PRACOWNIK_MIASTO.nazwa AS miasto_pracownika,
+
+    KLIENT_OSOBA.imie AS imie_klienta,
+    KLIENT_OSOBA.nazwisko AS nazwisko_klienta,
+    KLIENT_OSOBA.pesel AS pesel_klienta,
+    KLIENT_ADRES.ulica AS ulica_klienta,
+    KLIENT_ADRES.nr_domu AS nr_domu_klienta,
+    KLIENT_ADRES.nr_mieszkania AS nr_mieszkania_klienta,
+    KLIENT_MIASTO.nazwa AS miasto_klienta
   FROM ZLECENIE
   JOIN USLUGA ON (ZLECENIE.USLUGA_ID = USLUGA.ID)
 
@@ -351,7 +379,7 @@ SELECT * FROM (
   JOIN MIASTO PRACOWNIK_MIASTO ON (PRACOWNIK_ADRES.MIASTO_ID = PRACOWNIK_MIASTO.ID)
 
   JOIN KLIENT ON (ZLECENIE.KLIENT_ID = KLIENT.ID)
-  JOIN OSOBA KLIENT_OSOBA ON (PRACOWNIK.OSOBA_ID = KLIENT_OSOBA.ID)
+  JOIN OSOBA KLIENT_OSOBA ON (KLIENT.OSOBA_ID = KLIENT_OSOBA.ID)
   JOIN ADRES KLIENT_ADRES ON (KLIENT_OSOBA.ADRES_ID = KLIENT_ADRES.ID)
   JOIN MIASTO KLIENT_MIASTO ON (KLIENT_ADRES.MIASTO_ID = KLIENT_MIASTO.ID)
 
@@ -365,9 +393,25 @@ SELECT * FROM (
     ZLECENIE.id,
     USLUGA.opis_uslugi,
     USLUGA.cena_podstawowa,
+    ROUND((USLUGA.cena_podstawowa - ((KLIENT.znizka/100) * USLUGA.cena_podstawowa)), 2) AS cena_ze_znizka,
+
     PRACOWNIK_OSOBA.imie AS imie_pracownika,
     PRACOWNIK_OSOBA.nazwisko AS nazwisko_pracownika,
-    PRACOWNIK.stanowisko
+    PRACOWNIK_OSOBA.pesel AS pesel_pracownika,
+    PRACOWNIK_OSOBA.stan_cywilny AS stan_cywilny_pracownika,
+    PRACOWNIK.stanowisko,
+    PRACOWNIK_ADRES.ulica AS ulica_pracownika,
+    PRACOWNIK_ADRES.nr_domu AS nr_domu_pracownika,
+    PRACOWNIK_ADRES.nr_mieszkania AS nr_mieszkania_pracownika,
+    PRACOWNIK_MIASTO.nazwa AS miasto_pracownika,
+
+    KLIENT_OSOBA.imie AS imie_klienta,
+    KLIENT_OSOBA.nazwisko AS nazwisko_klienta,
+    KLIENT_OSOBA.pesel AS pesel_klienta,
+    KLIENT_ADRES.ulica AS ulica_klienta,
+    KLIENT_ADRES.nr_domu AS nr_domu_klienta,
+    KLIENT_ADRES.nr_mieszkania AS nr_mieszkania_klienta,
+    KLIENT_MIASTO.nazwa AS miasto_klienta
   FROM ZLECENIE
   JOIN USLUGA ON (ZLECENIE.USLUGA_ID = USLUGA.ID)
 
@@ -377,7 +421,7 @@ SELECT * FROM (
   JOIN MIASTO PRACOWNIK_MIASTO ON (PRACOWNIK_ADRES.MIASTO_ID = PRACOWNIK_MIASTO.ID)
 
   JOIN KLIENT ON (ZLECENIE.KLIENT_ID = KLIENT.ID)
-  JOIN OSOBA KLIENT_OSOBA ON (PRACOWNIK.OSOBA_ID = KLIENT_OSOBA.ID)
+  JOIN OSOBA KLIENT_OSOBA ON (KLIENT.OSOBA_ID = KLIENT_OSOBA.ID)
   JOIN ADRES KLIENT_ADRES ON (KLIENT_OSOBA.ADRES_ID = KLIENT_ADRES.ID)
   JOIN MIASTO KLIENT_MIASTO ON (KLIENT_ADRES.MIASTO_ID = KLIENT_MIASTO.ID)
 
