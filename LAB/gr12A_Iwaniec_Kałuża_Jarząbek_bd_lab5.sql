@@ -81,3 +81,23 @@ WHERE s.nazwa = 'KONSULTANT'
 GROUP BY o.imie, o.nazwisko
 ORDER BY o.nazwisko ASC;
 
+SELECT ok.nazwisko, u.opis, u.cena
+FROM OSOBY o
+JOIN ADRESY a ON (o.id_adresu = a.id_adresu)
+JOIN PRACOWNICY p ON (o.id_osoby = p.id_osoby)
+JOIN ZLECENIA z ON (p.id_pracownika = z.id_pracownika)
+JOIN KLIENCI k ON (k.id_klienta = z.id_klienta)
+JOIN OSOBY ok ON (k.id_osoby = ok.id_osoby)
+JOIN USLUGI u ON (z.id_uslugi = u.id_uslugi)
+WHERE a.miasto = 'Kielce';
+
+SELECT ok.nazwisko, u.opis, u.cena
+FROM OSOBY o
+JOIN ADRESY a ON (o.id_adresu = a.id_adresu)
+JOIN PRACOWNICY p ON (o.id_osoby = p.id_osoby)
+JOIN ZLECENIA z ON (p.id_pracownika = z.id_pracownika)
+JOIN KLIENCI k ON (k.id_klienta = z.id_klienta)
+JOIN OSOBY ok ON (k.id_osoby = ok.id_osoby)
+JOIN USLUGI u ON (z.id_uslugi = u.id_uslugi)
+WHERE a.miasto = 'Kielce'
+ORDER BY u.cena ASC;
