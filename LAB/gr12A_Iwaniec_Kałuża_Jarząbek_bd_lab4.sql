@@ -22,5 +22,10 @@ SELECT nazwisko, imie FROM OSOBY WHERE regexp_like(nazwisko, '^[A-K]{1}');
 
 SELECT nazwisko, imie FROM OSOBY WHERE NOT regexp_like(nazwisko, '^[A-K]{1}');
 
-SELECT imie, imie, stan_cywilny FROM OSOBY WHERE stan_cywilny != 'wolny' AND stan_cywilny != 'wolna';
+SELECT imie, nazwisko, stan_cywilny FROM OSOBY WHERE stan_cywilny != 'wolny' AND stan_cywilny != 'wolna';
 
+SELECT imie, nazwisko, pesel AS "Numer identyfikacyjny" FROM OSOBY;
+
+SELECT nazwisko, imie, telefon, wiek FROM OSOBY WHERE nazwisko = 'Piotrowska' OR nazwisko = 'Piotrowski';
+
+SELECT nazwisko, imie, wiek, telefon FROM OSOBY WHERE wiek > 30 AND telefon IS NULL;
