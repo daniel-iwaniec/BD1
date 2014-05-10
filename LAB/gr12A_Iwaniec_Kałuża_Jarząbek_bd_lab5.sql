@@ -60,3 +60,24 @@ JOIN ZLECENIA z ON (k.id_klienta = z.id_klienta)
 JOIN USLUGI u ON (z.id_uslugi = u.id_uslugi)
 GROUP BY a.miasto
 ORDER BY "Zarobek" DESC;
+
+SELECT o.imie, o.nazwisko
+FROM OSOBY o
+JOIN KLIENCI k ON (o.id_osoby = k.id_osoby)
+JOIN ZLECENIA z ON (k.id_klienta = z.id_klienta)
+JOIN PRACOWNICY p ON (z.id_pracownika = p.id_pracownika)
+JOIN STANOWISKA s ON (p.id_stanowiska = s.id_stanowiska)
+WHERE s.nazwa = 'KONSULTANT'
+GROUP BY o.imie, o.nazwisko
+ORDER BY o.imie ASC;
+
+SELECT o.imie, o.nazwisko
+FROM OSOBY o
+JOIN KLIENCI k ON (o.id_osoby = k.id_osoby)
+JOIN ZLECENIA z ON (k.id_klienta = z.id_klienta)
+JOIN PRACOWNICY p ON (z.id_pracownika = p.id_pracownika)
+JOIN STANOWISKA s ON (p.id_stanowiska = s.id_stanowiska)
+WHERE s.nazwa = 'KONSULTANT'
+GROUP BY o.imie, o.nazwisko
+ORDER BY o.nazwisko ASC;
+
