@@ -29,3 +29,10 @@ SELECT imie, nazwisko, pesel AS "Numer identyfikacyjny" FROM OSOBY;
 SELECT nazwisko, imie, telefon, wiek FROM OSOBY WHERE nazwisko = 'Piotrowska' OR nazwisko = 'Piotrowski';
 
 SELECT nazwisko, imie, wiek, telefon FROM OSOBY WHERE wiek > 30 AND telefon IS NULL;
+
+SELECT nazwisko, imie, wiek, telefon FROM OSOBY WHERE wiek < 40 AND regexp_like(nazwisko, '^[P-S]{1}');
+
+SELECT o.imie, o.nazwisko, a.miasto
+FROM OSOBY o
+JOIN ADRESY a ON (o.id_adresu = a.id_adresu)
+WHERE a.miasto != 'Kielce';
