@@ -55,7 +55,88 @@ JOIN PRACOWNICY p ON (p.id_osoby = o.id_osoby)
 JOIN STANOWISKA s ON (s.id_stanowiska = p.id_stanowiska)
 WHERE o.pesel = '77040368155';
 
--- CREATE OR REPLACE PROCEDURE MODYFIKUJ_KLIENTA
--- CREATE OR REPLACE PROCEDURE DODAJ_ZAMOWIENIE
+CREATE OR REPLACE PROCEDURE MODYFIKUJ_KLIENTA (
+  klient_id IN NUMBER,
+  klient_znizka IN NUMBER,
+  osoba_imie IN VARCHAR2,
+  osoba_nazwisko IN VARCHAR2,
+  osoba_wiek IN NUMBER,
+  osoba_stan_cywilny IN VARCHAR2,
+  osoba_telefon IN VARCHAR2,
+  osoba_pesel IN CHAR,
+  adres_miasto IN VARCHAR2,
+  adres_ulica IN VARCHAR2,
+  adres_nr IN VARCHAR2
+  ) AUTHID DEFINER IS
+  adres_id NUMBER := NULL;
+  osoba_id NUMBER;
+  BEGIN
+   SELECT id_osoby INTO osoba_id FROM KLIENCI WHERE id_klienta = klient_id;
+   SELECT id_adresu INTO adres_id FROM OSOBY WHERE id_osoby = osoba_id;
+
+   IF klient_znizka IS NOT NULL THEN
+    UPDATE KLIENCI SET znizka = klient_znizka WHERE id_klienta = klient_id;
+   END IF;
+   IF osoba_imie IS NOT NULL THEN
+    UPDATE OSOBY o SET imie = osoba_imie WHERE id_osoby = osoba_id;
+   END IF;
+   IF osoba_nazwisko IS NOT NULL THEN
+    UPDATE OSOBY o SET nazwisko = osoba_nazwisko WHERE id_osoby = osoba_id;
+   END IF;
+   IF osoba_wiek IS NOT NULL THEN
+    UPDATE OSOBY o SET wiek = osoba_wiek WHERE id_osoby = osoba_id;
+   END IF;
+   IF osoba_stan_cywilny IS NOT NULL THEN
+    UPDATE OSOBY o SET stan_cywilny = osoba_stan_cywilny WHERE id_osoby = osoba_id;
+   END IF;
+   IF osoba_telefon IS NOT NULL THEN
+    UPDATE OSOBY o SET telefon = osoba_telefon WHERE id_osoby = osoba_id;
+   END IF;
+   IF osoba_pesel IS NOT NULL THEN
+    UPDATE OSOBY o SET pesel = osoba_pesel WHERE id_osoby = osoba_id;
+   END IF;
+   IF adres_miasto IS NOT NULL THEN
+    UPDATE ADRESY a SET miasto = adres_miasto WHERE id_adresu = adres_id;
+   END IF;
+   IF adres_ulica IS NOT NULL THEN
+    UPDATE ADRESY a SET ulica = adres_ulica WHERE id_adresu = adres_id;
+   END IF;
+   IF adres_nr IS NOT NULL THEN
+    UPDATE ADRESY a SET nr = adres_nr WHERE id_adresu = adres_id;
+   END IF;
+  END;
+/
+
+EXEC MODYFIKUJ_KLIENTA(7, 10, 'Klient1', NULL, 33, NULL, '+48786512459', NULL, 'Miasto1', NULL, '4/4');
+
+SELECT * FROM KLIENCI k
+JOIN OSOBY o ON (k.id_osoby = o.id_osoby)
+JOIN ADRESY a ON (a.id_adresu = o.id_adresu)
+WHERE k.id_klienta = 7;
+
+CREATE OR REPLACE PROCEDURE DODAJ_ZAMOWIENIE (
+  klient_id IN NUMBER,
+  klient_znizka IN NUMBER,
+  osoba_imie IN VARCHAR2,
+  osoba_nazwisko IN VARCHAR2,
+  osoba_wiek IN NUMBER,
+  osoba_stan_cywilny IN VARCHAR2,
+  osoba_telefon IN VARCHAR2,
+  osoba_pesel IN CHAR,
+  adres_miasto IN VARCHAR2,
+  adres_ulica IN VARCHAR2,
+  adres_nr IN VARCHAR2
+  ) AUTHID DEFINER IS
+  adres_id NUMBER := NULL;
+  osoba_id NUMBER;
+  BEGIN
+   SELECT id_osoby INTO osoba_id FROM KLIENCI WHERE id_klienta = klient_id;
+   SELECT id_adresu INTO adres_id FROM OSOBY WHERE id_osoby = osoba_id;
+
+   IF klient_znizka IS NOT NULL THEN
+    UPDATE KLIENCI SET znizka = klient_znizka WHERE id_klienta = klient_id;
+   END IF;
+  END;
+/
 
 -- CREATE OR REPLACE FUNCTION GET_NAZWISKO_NAJWIECEJ_ZLECEN
