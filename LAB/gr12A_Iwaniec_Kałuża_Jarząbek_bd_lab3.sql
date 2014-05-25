@@ -1,9 +1,9 @@
--- DROP
 CREATE OR REPLACE PROCEDURE DROP_ALL AUTHID DEFINER IS
   CURSOR CURSOR_OBJECT IS
     SELECT object_type,'"'||object_name||'"'||decode(object_type, 'TABLE', ' CASCADE CONSTRAINTS', NULL) AS obj_name
     FROM user_objects
-    WHERE object_type IN ('TABLE', 'VIEW', 'SEQUENCE');
+    WHERE object_type IN ('TRIGGER', 'TABLE', 'VIEW', 'SEQUENCE', 'PROCEDURE', 'FUNCTION', 'TYPE', 'PACKAGE')
+    AND object_name != 'DROP_ALL';
 BEGIN
   BEGIN
     FOR OBJECT in CURSOR_OBJECT LOOP
@@ -12,11 +12,8 @@ BEGIN
   END;
 END;
 /
-
 EXECUTE DROP_ALL;
-
-
--- CREATE
+DROP PROCEDURE DROP_ALL;
 
 -- CREATE MIASTO
 CREATE TABLE MIASTO (
@@ -45,8 +42,8 @@ CREATE TABLE ADRES (
   id NUMBER(10),
   miasto_id NUMBER(10) NOT NULL,
   ulica VARCHAR2(100) NOT NULL,
-  nr_domu VARCHAR2(100) NOT NULL, -- Mo≈ºe zawieraƒá litery, np. 12A
-  nr_mieszkania VARCHAR2(100) -- jak wy≈ºej
+  nr_domu VARCHAR2(100) NOT NULL,
+  nr_mieszkania VARCHAR2(100)
 );
 ALTER TABLE ADRES ADD (
   CONSTRAINT ADRES_PK PRIMARY KEY (id),
@@ -142,7 +139,7 @@ END;
 CREATE TABLE KLIENT (
   id NUMBER(10),
   osoba_id NUMBER(10) NOT NULL,
-  znizka NUMBER(3) DEFAULT 0 -- Wyra≈ºone procentowo (od 0 do 100 procent)
+  znizka NUMBER(3) DEFAULT 0 -- Wyraøone procentowo (od 0 do 100 procent)
 );
 ALTER TABLE KLIENT ADD (
   CONSTRAINT KLIENT_PK PRIMARY KEY (id),
@@ -234,7 +231,7 @@ INSERT INTO ADRES (miasto_id, ulica, nr_domu, nr_mieszkania) VALUES (miasto_id, 
 INSERT INTO OSOBA (adres_id, imie, nazwisko, wiek, stan_cywilny, telefon, pesel) VALUES (adres_id, 'Imie klient1', 'Nazwisko klient1', 20, 0, '325654432', 54042719044) RETURNING id INTO osoba_id;
 INSERT INTO KLIENT (osoba_id, znizka) VALUES (osoba_id, 10.00) RETURNING id INTO klient_id;
 
-INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('Us≈Çuga1', 100.00) RETURNING id INTO usluga_id;
+INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('Us≥uga1', 100.00) RETURNING id INTO usluga_id;
 
 INSERT INTO ZLECENIE (usluga_id, klient_id, pracownik_id) VALUES (usluga_id, klient_id, pracownik_id);
 COMMIT;
@@ -253,21 +250,21 @@ DECLARE
   zlecenie_id NUMBER := NULL;
 BEGIN
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED NAME 'CREATE_ZLECENIE2';
-INSERT INTO MIASTO (nazwa) VALUES ('Krak√≥w') RETURNING id INTO miasto1_id;
+INSERT INTO MIASTO (nazwa) VALUES ('KrakÛw') RETURNING id INTO miasto1_id;
 INSERT INTO ADRES (miasto_id, ulica, nr_domu, nr_mieszkania) VALUES (miasto1_id, 'Ulica 3', '3A', '5B') RETURNING id INTO adres_id;
 INSERT INTO OSOBA (adres_id, imie, nazwisko, wiek, stan_cywilny, telefon, pesel) VALUES (adres_id, 'Imie pracownik2', 'Nazwisko pracownik2', 36, 1, '526452834', 91031204121) RETURNING id INTO osoba_id;
 INSERT INTO PRACOWNIK (osoba_id, stanowisko, staz_pracy, wynagrodzenie_brutto) VALUES (osoba_id, 'Sprzedawca', 1, 2200.00) RETURNING id INTO pracownik_id;
 
-INSERT INTO MIASTO (nazwa) VALUES ('Gda≈Ñsk') RETURNING id INTO miasto2_id;
+INSERT INTO MIASTO (nazwa) VALUES ('GdaÒsk') RETURNING id INTO miasto2_id;
 INSERT INTO ADRES (miasto_id, ulica, nr_domu, nr_mieszkania) VALUES (miasto2_id, 'Ulica 20', '4A', '9B') RETURNING id INTO adres_id;
 INSERT INTO OSOBA (adres_id, imie, nazwisko, wiek, stan_cywilny, telefon, pesel) VALUES (adres_id, 'Imie klient2', 'Nazwisko klient2', 22, 0, '325982932', 33092705122) RETURNING id INTO osoba_id;
 INSERT INTO KLIENT (osoba_id, znizka) VALUES (osoba_id, 0) RETURNING id INTO klient_id;
 
-INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('Us≈Çuga2', 200.10) RETURNING id INTO usluga_id;
+INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('Us≥uga2', 200.10) RETURNING id INTO usluga_id;
 
 INSERT INTO ZLECENIE (usluga_id, klient_id, pracownik_id) VALUES (usluga_id, klient_id, pracownik_id) RETURNING id INTO zlecenie_id;
 COMMIT;
--- Bez sensu, ale jest dla dobra przyk≈Çadu
+-- Bez sensu, ale jest dla dobra przyk≥adu
 DELETE MIASTO WHERE id IN (SELECT id FROM MIASTO WHERE id = miasto1_id);
 DELETE MIASTO WHERE id IN (SELECT id FROM MIASTO WHERE id = miasto2_id);
 DELETE USLUGA WHERE id IN (SELECT id FROM USLUGA WHERE id = usluga_id);
@@ -285,22 +282,22 @@ DECLARE
   usluga_id NUMBER := NULL;
 BEGIN
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED NAME 'CREATE_ZLECENIE3';
-INSERT INTO MIASTO (nazwa) VALUES ('Wroc≈Çaw') RETURNING id INTO miasto_id;
+INSERT INTO MIASTO (nazwa) VALUES ('Wroc≥aw') RETURNING id INTO miasto_id;
 INSERT INTO ADRES (miasto_id, ulica, nr_domu, nr_mieszkania) VALUES (miasto_id, 'Ulica 4', '12A', '23B') RETURNING id INTO adres_id;
 INSERT INTO OSOBA (adres_id, imie, nazwisko, wiek, stan_cywilny, telefon, pesel) VALUES (adres_id, 'Imie pracownik3', 'Nazwisko pracownik3', 39, 1, '526773434', 27121818237) RETURNING id INTO osoba_id;
 INSERT INTO PRACOWNIK (osoba_id, stanowisko, staz_pracy, wynagrodzenie_brutto) VALUES (osoba_id, 'Kierownik', 4, 3200.00) RETURNING id INTO pracownik_id;
 
-INSERT INTO MIASTO (nazwa) VALUES ('Pozna≈Ñ') RETURNING id INTO miasto_id;
+INSERT INTO MIASTO (nazwa) VALUES ('PoznaÒ') RETURNING id INTO miasto_id;
 INSERT INTO ADRES (miasto_id, ulica, nr_domu, nr_mieszkania) VALUES (miasto_id, 'Ulica 8', '14A', '26') RETURNING id INTO adres_id;
 INSERT INTO OSOBA (adres_id, imie, nazwisko, wiek, stan_cywilny, telefon, pesel) VALUES (adres_id, 'Imie klient3', 'Nazwisko klient3', 25, 0, '399482966', 31060716152) RETURNING id INTO osoba_id;
 INSERT INTO KLIENT (osoba_id, znizka) VALUES (osoba_id, 0) RETURNING id INTO klient_id;
 
-INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('Us≈Çuga3', 500.12) RETURNING id INTO usluga_id;
+INSERT INTO USLUGA (opis_uslugi, cena_podstawowa) VALUES ('U≥Çuga3', 500.12) RETURNING id INTO usluga_id;
 
 INSERT INTO ZLECENIE (usluga_id, klient_id, pracownik_id) VALUES (usluga_id, klient_id, pracownik_id);
 
 COMMIT;
--- Bez sensu, ale jest dla dobra przyk≈Çadu
+-- Bez sensu, ale jest dla dobra przyk≥adu
 UPDATE KLIENT SET znizka = 5 WHERE id = klient_id;
 UPDATE KLIENT SET (znizka) = (
   SELECT znizka FROM (
@@ -315,21 +312,21 @@ END;
 
 -- SELECT
 
--- SELECT (ten select jest bez sensu, ale chodzi≈Ço o dobry przyk≈Çad)
+-- SELECT (ten select jest bez sensu, ale chodzi≥o o dobry przyk≥ad)
 CREATE OR REPLACE VIEW DATA_WAREHOUSE AS
 SELECT
   id AS "Numer zlecenia",
-  opis_uslugi AS "Us≈Çuga",
-  to_char(cena_podstawowa, 'fm9999999.90') AS "Cena us≈Çugi",
-  to_char(cena_ze_znizka, 'fm9999999.90') AS "Cena ze zni≈ºkƒÖ",
+  opis_uslugi AS "Us≥uga",
+  to_char(cena_podstawowa, 'fm9999999.90') AS "Cena us≥ugi",
+  to_char(cena_ze_znizka, 'fm9999999.90') AS "Cena ze zniøkπ",
 
-  imie_pracownika AS "Imiƒô pracownika",
+  imie_pracownika AS "ImiÍ pracownika",
   nazwisko_pracownika AS "Nazwisko pracownika",
   pesel_pracownika AS "Pesel pracownika",
   stanowisko AS "Stanowisko pracownika",
   CASE -- terminologia wg http://pl.wikipedia.org/wiki/Stan_cywilny
    WHEN stan_cywilny_pracownika = 0 THEN 'Stan wolny'
-   WHEN stan_cywilny_pracownika = 1 THEN 'Ma≈Ç≈ºonek'
+   WHEN stan_cywilny_pracownika = 1 THEN 'Ma≥øonek'
   END AS "Stan cywilny pracownika",
   miasto_pracownika || ', ' || ulica_pracownika || ' ' || nr_domu_pracownika ||
   CASE
